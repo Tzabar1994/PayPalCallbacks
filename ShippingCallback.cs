@@ -29,7 +29,7 @@ public class ShippingCallback
     {
         _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-        var options = new JsonSerializerOptions
+        var braintreeJsonOptions = new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
@@ -50,7 +50,7 @@ public class ShippingCallback
 
         try
         {
-            var blob = JsonSerializer.Deserialize<BraintreeRequest>(rawRequestBody, options)
+            var blob = JsonSerializer.Deserialize<BraintreeRequest>(rawRequestBody, braintreeJsonOptions)
                 ?? throw new JsonException("Could not deserialise input correctly!");
 
             _logger.LogInformation($"Json De-serialized: {blob}");
@@ -73,21 +73,24 @@ public class ShippingCallback
             {
                 //If no selected shipping option, then this is a new address?
                 //  Update the response with the generic shipping options
-                _logger.LogInformation("No option provided, generate default options");
+                _logger.LogInformation("No shipping options found, generating defaults");
 
-                _logger.LogInformation($"Looking at Postal Code: {blob.Shipping_address.Postal_code}");
+                _logger.LogInformation($"Check if Postal Code is valid (must not contain 'X'): {blob.Shipping_address.Postal_code}");
 
                 if (blob.Shipping_address.Postal_code.ToUpper().Contains("X"))
                 {
+                    _logger.LogInformation("Invalid Postal Code found, rejecting address");
+
                     var errorCode = new PayPalError { Issue = PayPalErrorCode.ZIP_ERROR };
                     var error = new PayPalErrorResponse
                     {
                         Name = "UNPROCESSABLE_ENTITY",
                         Details = new List<PayPalError> { errorCode }
                     };
-                    return new SystemTextJsonResult(error, options, 400);
+                    return new SystemTextJsonResult(error, braintreeJsonOptions, 400);
                 }
 
+                //Deal with weirdness in the BT request?
                 if (blob.Item_total == 0)
                 {
                     BTResponse.Item_total = blob.Amount.Value;
@@ -97,30 +100,29 @@ public class ShippingCallback
                     BTResponse.Amount.Value = blob.Item_total;
                 }
 
-                BTResponse.Shipping_options = generateOptions(0);
+                BTResponse.Shipping_options = generateOptions();
             }
             else
             {
                 //We're responding to a newly selected shipping option?
                 _logger.LogInformation("Updating Total price for selected shipping option!");
-                var shipping = blob?.Shipping_option.Amount.Value;
-                var total = blob?.Item_total + shipping ?? 0;
+                var shipping = blob.Shipping_option.Amount.Value;
                 var selectedOption = Int32.Parse(blob.Shipping_option.Id) - 1;
 
                 var amount = new Amount
                 {
                     Currency_code = blob.Amount.Currency_code,
-                    Value = total
+                    Value = blob.Item_total + shipping
                 };
 
                 BTResponse.Amount = amount;
                 BTResponse.Item_total = blob.Item_total;
-                BTResponse.Shipping = shipping ?? 0;
+                BTResponse.Shipping = shipping;
                 BTResponse.Shipping_options = generateOptions(selectedOption);
             }
 
             _logger.LogInformation($"Returning Result: {BTResponse}");
-            return new SystemTextJsonResult(BTResponse, options);
+            return new SystemTextJsonResult(BTResponse, braintreeJsonOptions);
 
         }
         catch (JsonException)
@@ -129,28 +131,28 @@ public class ShippingCallback
         }
     }
 
-    public List<Shipping_option> generateOptions(int selected)
+    public List<ShippingOption> generateOptions(int selected = 0)
     {
         var free = new Amount { Value = 0, Currency_code = "GBP" };
         var medium = new Amount { Value = 5, Currency_code = "GBP" };
         var expensive = new Amount { Value = 10, Currency_code = "GBP" };
 
-        var ship_options = new List<Shipping_option> {
-                    new Shipping_option {
+        var ship_options = new List<ShippingOption> {
+                    new ShippingOption {
                         Id = "1",
                         Amount = free,
                         Type = "SHIPPING",
                         Description = "Free Shipping",
                         Selected = false
                     },
-                    new Shipping_option {
+                    new ShippingOption {
                         Id = "2",
                         Amount = medium,
                         Type = "SHIPPING",
                         Description = "Medium Shipping",
                         Selected = false
                     },
-                    new Shipping_option {
+                    new ShippingOption {
                         Id = "3",
                         Amount = expensive,
                         Type = "SHIPPING",
@@ -182,7 +184,7 @@ public class ShippingCallback
         public required string Currency_code { get; set; }
     }
 
-    public record Shipping_address
+    public record ShippingAddress
     {
         public string? Admin_area_2 { get; set; }
         public string? Admin_area_1 { get; set; }
@@ -190,7 +192,7 @@ public class ShippingCallback
         public required string Country_code { get; set; }
     }
 
-    public record Shipping_option
+    public record ShippingOption
     {
         public required string Id { get; set; }
         public required Amount Amount { get; set; }
@@ -200,20 +202,20 @@ public class ShippingCallback
 
     }
 
-    public record BraintreeResponse : BraintreeBase
+    public record BraintreeResponse : BraintreeBaseResponse
     {
-        public required List<Shipping_option> Shipping_options { get; set; }
+        public required List<ShippingOption> Shipping_options { get; set; }
     }
 
-    public record BraintreeRequest : BraintreeBase
+    public record BraintreeRequest : BraintreeBaseResponse
     {
-        public required Shipping_address Shipping_address { get; set; }
-        public Shipping_option? Shipping_option { get; set; }
+        public required ShippingAddress Shipping_address { get; set; }
+        public ShippingOption? Shipping_option { get; set; }
 
     }
 
 
-    public record BraintreeBase
+    public record BraintreeBaseResponse
     {
         public required string Id { get; set; }
         public required Amount Amount { get; set; }
