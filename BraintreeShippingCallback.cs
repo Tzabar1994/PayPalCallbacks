@@ -1,25 +1,19 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+using BTCallback.Models;
+using BTCallback.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using System.Linq;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Identity.Client;
-using System;
-using System.Security.AccessControl;
-using System.Collections.Generic;
-using System.Net;
 
 namespace tzabar.braintree;
 
-public class ShippingCallback
+public class BraintreeShippingCallback
 {
-    private readonly ILogger<ShippingCallback> _logger;
+    private readonly ILogger<BraintreeShippingCallback> _logger;
 
-    public ShippingCallback(ILogger<ShippingCallback> logger)
+    public BraintreeShippingCallback(ILogger<BraintreeShippingCallback> logger)
     {
         _logger = logger;
     }
@@ -27,7 +21,7 @@ public class ShippingCallback
     [Function("ShippingCallback")]
     public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
-        _logger.LogInformation("C# HTTP trigger function processed a request.");
+        _logger.LogInformation("Braintree Shipping Callback triggered");
 
         var braintreeJsonOptions = new JsonSerializerOptions
         {
@@ -87,7 +81,7 @@ public class ShippingCallback
                         Name = "UNPROCESSABLE_ENTITY",
                         Details = new List<PayPalError> { errorCode }
                     };
-                    return new SystemTextJsonResult(error, braintreeJsonOptions, 400);
+                    return new SystemTextJsonResult(error, braintreeJsonOptions, 422);
                 }
 
                 //Deal with weirdness in the BT request?
@@ -133,28 +127,28 @@ public class ShippingCallback
         }
     }
 
-    public List<ShippingOption> generateOptions(int selected = 0)
+    public List<BraintreeShippingOption> generateOptions(int selected = 0)
     {
         var free = new Amount { Value = 0, Currency_code = "GBP" };
         var medium = new Amount { Value = 5, Currency_code = "GBP" };
         var expensive = new Amount { Value = 10, Currency_code = "GBP" };
 
-        var ship_options = new List<ShippingOption> {
-                    new ShippingOption {
+        var ship_options = new List<BraintreeShippingOption> {
+                    new BraintreeShippingOption {
                         Id = "1",
                         Amount = free,
                         Type = "SHIPPING",
                         Description = "Free Shipping",
                         Selected = false
                     },
-                    new ShippingOption {
+                    new BraintreeShippingOption {
                         Id = "2",
                         Amount = medium,
                         Type = "SHIPPING",
                         Description = "Medium Shipping",
                         Selected = false
                     },
-                    new ShippingOption {
+                    new BraintreeShippingOption {
                         Id = "3",
                         Amount = expensive,
                         Type = "SHIPPING",
@@ -168,86 +162,5 @@ public class ShippingCallback
         return ship_options;
     }
 
-    public class SystemTextJsonResult : ContentResult
-    {
-        private const string ContentTypeApplicationJson = "application/json";
-
-        public SystemTextJsonResult(object value, JsonSerializerOptions options, int? code = 200)
-        {
-            ContentType = ContentTypeApplicationJson;
-            Content = JsonSerializer.Serialize(value, options);
-            StatusCode = code;
-        }
-    }
-
-    public record Amount
-    {
-        public required decimal Value { get; set; }
-        public required string Currency_code { get; set; }
-    }
-
-    public record ShippingAddress
-    {
-        public string? Admin_area_2 { get; set; }
-        public string? Admin_area_1 { get; set; }
-        public required string Postal_code { get; set; }
-        public required string Country_code { get; set; }
-    }
-
-    public record ShippingOption
-    {
-        public required string Id { get; set; }
-        public required Amount Amount { get; set; }
-        public required string Type { get; set; }
-        public required string Description { get; set; }
-        public bool? Selected { get; set; }
-
-    }
-
-    public record BraintreeResponse : BraintreeBaseResponse
-    {
-        public required List<ShippingOption> Shipping_options { get; set; }
-    }
-
-    public record BraintreeRequest : BraintreeBaseResponse
-    {
-        public required ShippingAddress Shipping_address { get; set; }
-        public ShippingOption? Shipping_option { get; set; }
-
-    }
-
-
-    public record BraintreeBaseResponse
-    {
-        public required string Id { get; set; }
-        public required Amount Amount { get; set; }
-        public decimal Item_total { get; set; }
-        public decimal Shipping { get; set; }
-        public decimal Handling { get; set; }
-        public decimal Tax_total { get; set; }
-        public decimal Insurance { get; set; }
-        public decimal Shipping_discount { get; set; }
-        public decimal Discount { get; set; }
-    }
-
-    public enum PayPalErrorCode
-    {
-        ADDRESS_ERROR,
-        COUNTRY_ERROR,
-        STATE_ERROR,
-        ZIP_ERROR,
-        METHOD_UNAVAILABLE,
-        STORE_UNAVAILABLE
-    }
-
-    public record PayPalError
-    {
-        public PayPalErrorCode Issue { get; set; }
-    }
-
-    public record PayPalErrorResponse
-    {
-        public required string Name { get; set; }
-        public required List<PayPalError> Details { get; set; }
-    }
+    
 }
