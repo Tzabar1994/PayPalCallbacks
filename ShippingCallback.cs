@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Identity.Client;
 using System;
 using System.Security.AccessControl;
+using System.Collections.Generic;
+using System.Net;
 
 namespace tzabar.braintree;
 
@@ -32,7 +34,11 @@ public class ShippingCallback
             PropertyNameCaseInsensitive = true,
             PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
             NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Converters =
+            {
+                new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseUpper)
+            }
         };
 
         req.EnableBuffering();
@@ -68,6 +74,19 @@ public class ShippingCallback
                 //If no selected shipping option, then this is a new address?
                 //  Update the response with the generic shipping options
                 _logger.LogInformation("No option provided, generate default options");
+
+                _logger.LogInformation($"Looking at Postal Code: {blob.Shipping_address.Postal_code}");
+
+                if (blob.Shipping_address.Postal_code.ToUpper().Contains("X"))
+                {
+                    var errorCode = new PayPalError { Issue = PayPalErrorCode.ZIP_ERROR };
+                    var error = new PayPalErrorResponse
+                    {
+                        Name = "UNPROCESSABLE_ENTITY",
+                        Details = new List<PayPalError> { errorCode }
+                    };
+                    return new SystemTextJsonResult(error, options, 400);
+                }
 
                 if (blob.Item_total == 0)
                 {
@@ -149,10 +168,11 @@ public class ShippingCallback
     {
         private const string ContentTypeApplicationJson = "application/json";
 
-        public SystemTextJsonResult(object value, JsonSerializerOptions options)
+        public SystemTextJsonResult(object value, JsonSerializerOptions options, int? code = 200)
         {
             ContentType = ContentTypeApplicationJson;
             Content = JsonSerializer.Serialize(value, options);
+            StatusCode = code;
         }
     }
 
@@ -204,5 +224,26 @@ public class ShippingCallback
         public decimal Insurance { get; set; }
         public decimal Shipping_discount { get; set; }
         public decimal Discount { get; set; }
+    }
+
+    public enum PayPalErrorCode
+    {
+        ADDRESS_ERROR,
+        COUNTRY_ERROR,
+        STATE_ERROR,
+        ZIP_ERROR,
+        METHOD_UNAVAILABLE,
+        STORE_UNAVAILABLE
+    }
+
+    public record PayPalError
+    {
+        public PayPalErrorCode Issue { get; set; }
+    }
+
+    public record PayPalErrorResponse
+    {
+        public required string Name { get; set; }
+        public required List<PayPalError> Details { get; set; }
     }
 }
