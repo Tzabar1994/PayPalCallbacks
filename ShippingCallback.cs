@@ -127,6 +127,8 @@ public class ShippingCallback
         }
         catch (JsonException)
         {
+            _logger.LogError("Failed to de-serialize request from Braintree correctly!");
+            _logger.LogError($"Request Body: {rawRequestBody}");
             return new BadRequestObjectResult("Could not deserialize json correctly"); // 400
         }
     }
