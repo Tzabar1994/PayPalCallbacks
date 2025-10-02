@@ -63,15 +63,15 @@ public class BraintreeShippingCallback
                 ShippingOptions = []
             };
 
-            if (blob.Shipping_option == null)
+            if (blob.ShippingOption == null)
             {
                 //If no selected shipping option, then this is a new address?
                 //  Update the response with the generic shipping options
                 _logger.LogInformation("No shipping options found, generating defaults");
 
-                _logger.LogInformation($"Check if Postal Code is valid (must not contain 'X'): {blob.Shipping_address.Postal_code}");
+                _logger.LogInformation($"Check if Postal Code is valid (must not contain 'X'): {blob.ShippingAddress.PostalCode}");
 
-                if (blob.Shipping_address.PostalCode.ToUpper().Contains("X"))
+                if (blob.ShippingAddress.PostalCode.ToUpper().Contains("X"))
                 {
                     _logger.LogInformation("Invalid Postal Code found, rejecting address");
 
@@ -100,7 +100,7 @@ public class BraintreeShippingCallback
             {
                 //We're responding to a newly selected shipping option?
                 _logger.LogInformation("Updating Total price for selected shipping option!");
-                var shipping = blob.Shipping_option.Amount.Value;
+                var shipping = blob.ShippingOption.Amount.Value;
                 var selectedOption = Int32.Parse(blob.ShippingOption.Id) - 1;
 
                 var amount = new Amount
