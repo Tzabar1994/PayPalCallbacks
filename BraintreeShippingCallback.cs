@@ -53,14 +53,14 @@ public class BraintreeShippingCallback
             {
                 Id = blob.Id,
                 Amount = blob.Amount,
-                Item_total = 0,
+                ItemTotal = 0,
                 Shipping = 0,
                 Handling = 0,
-                Tax_total = 0,
+                TaxTotal = 0,
                 Insurance = 0,
-                Shipping_discount = 0,
+                ShippingDiscount = 0,
                 Discount = 0,
-                Shipping_options = []
+                ShippingOptions = []
             };
 
             if (blob.Shipping_option == null)
@@ -71,7 +71,7 @@ public class BraintreeShippingCallback
 
                 _logger.LogInformation($"Check if Postal Code is valid (must not contain 'X'): {blob.Shipping_address.Postal_code}");
 
-                if (blob.Shipping_address.Postal_code.ToUpper().Contains("X"))
+                if (blob.Shipping_address.PostalCode.ToUpper().Contains("X"))
                 {
                     _logger.LogInformation("Invalid Postal Code found, rejecting address");
 
@@ -85,34 +85,34 @@ public class BraintreeShippingCallback
                 }
 
                 //Deal with weirdness in the BT request?
-                if (blob.Item_total == 0)
+                if (blob.ItemTotal == 0)
                 {
-                    BTResponse.Item_total = blob.Amount.Value;
+                    BTResponse.ItemTotal = blob.Amount.Value;
                 }
                 else
                 {
-                    BTResponse.Amount.Value = blob.Item_total;
+                    BTResponse.Amount.Value = blob.ItemTotal;
                 }
 
-                BTResponse.Shipping_options = generateOptions();
+                BTResponse.ShippingOptions = generateOptions();
             }
             else
             {
                 //We're responding to a newly selected shipping option?
                 _logger.LogInformation("Updating Total price for selected shipping option!");
                 var shipping = blob.Shipping_option.Amount.Value;
-                var selectedOption = Int32.Parse(blob.Shipping_option.Id) - 1;
+                var selectedOption = Int32.Parse(blob.ShippingOption.Id) - 1;
 
                 var amount = new Amount
                 {
-                    Currency_code = blob.Amount.Currency_code,
-                    Value = blob.Item_total + shipping
+                    CurrencyCode = blob.Amount.CurrencyCode,
+                    Value = blob.ItemTotal + shipping
                 };
 
                 BTResponse.Amount = amount;
-                BTResponse.Item_total = blob.Item_total;
+                BTResponse.ItemTotal = blob.ItemTotal;
                 BTResponse.Shipping = shipping;
-                BTResponse.Shipping_options = generateOptions(selectedOption);
+                BTResponse.ShippingOptions = generateOptions(selectedOption);
             }
 
             _logger.LogInformation($"Returning Result: {BTResponse}");
@@ -129,11 +129,11 @@ public class BraintreeShippingCallback
 
     public List<BraintreeShippingOption> generateOptions(int selected = 0)
     {
-        var free = new Amount { Value = 0, Currency_code = "GBP" };
-        var medium = new Amount { Value = 5, Currency_code = "GBP" };
-        var expensive = new Amount { Value = 10, Currency_code = "GBP" };
+        var free = new Amount { Value = 0, CurrencyCode = "GBP" };
+        var medium = new Amount { Value = 5, CurrencyCode = "GBP" };
+        var expensive = new Amount { Value = 10, CurrencyCode = "GBP" };
 
-        var ship_options = new List<BraintreeShippingOption> {
+        var shipOptions = new List<BraintreeShippingOption> {
                     new BraintreeShippingOption {
                         Id = "1",
                         Amount = free,
@@ -157,9 +157,9 @@ public class BraintreeShippingCallback
                     }
                 };
 
-        ship_options[selected].Selected = true;
+        shipOptions[selected].Selected = true;
 
-        return ship_options;
+        return shipOptions;
     }
 
     
