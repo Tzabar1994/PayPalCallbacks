@@ -1,0 +1,58 @@
+{
+  "id": "7PJ54405NA435290U",
+  "purchase_units": [
+    {
+      "reference_id": "881f1b1c-2170-4b7f-99cb-1928a5729e75",
+      "amount": {
+        "breakdown": {
+          "item_total": {
+            "value": "9.99",
+            "currency_code": "GBP"
+          },
+          "tax_total": {
+            "value": "0",
+            "currency_code": "GBP"
+          },
+          "shipping": {
+            "value": "0",
+            "currency_code": "GBP"
+          }
+        },
+        "value": "9.99",
+        "currency_code": "GBP"
+      }
+    }
+  ],
+  "shipping_options": [
+    {
+      "id": "1",
+      "amount": {
+        "value": "0",
+        "currency_code": "GBP"
+      },
+      "type": "SHIPPING",
+      "label": "Free Shipping",
+      "selected": true
+    },
+    {
+      "id": "2",
+      "amount": {
+        "value": "5",
+        "currency_code": "GBP"
+      },
+      "type": "SHIPPING",
+      "label": "Medium Shipping",
+      "selected": false
+    },
+    {
+      "id": "3",
+      "amount": {
+        "value": "10",
+        "currency_code": "GBP"
+      },
+      "type": "SHIPPING",
+      "label": "Expensive Shipping",
+      "selected": false
+    }
+  ]
+}
