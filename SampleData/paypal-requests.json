@@ -25,5 +25,50 @@
         }
       }
     ]
+  },
+  {
+    "id": "7PJ54405NA435290U",
+    "shipping_address": {
+      "admin_area_1": "Surrey",
+      "admin_area_2": "Richmond",
+      "postal_code": "TW9 1EH",
+      "country_code": "GB"
+    },
+    "purchase_units": [
+      {
+        "reference_id": "881f1b1c-2170-4b7f-99cb-1928a5729e75",
+        "amount": {
+          "currency_code": "GBP",
+          "value": "9.99",
+          "breakdown": {
+            "item_total": {
+              "currency_code": "GBP",
+              "value": "9.99"
+            },
+            "shipping": {
+              "currency_code": "GBP",
+              "value": "0.00"
+            }
+          }
+        },
+        "payee": {
+          "email_address": "sb-nagkn26234393@business.example.com",
+          "merchant_id": "K9SNSXYLLRSS2"
+        },
+        "description": "A test description",
+        "custom_id": "9e519829-0f8e-411e-8806-ef067aa37388",
+        "invoice_id": "91ccf9d0-335b-4431-b7ac-b2dc8ede7276",
+        "items": [
+          {
+            "name": "Fancy Book",
+            "unit_amount": {
+              "currency_code": "GBP",
+              "value": "9.99"
+            },
+            "quantity": "1"
+          }
+        ]
+      }
+    ]
   }
 ]

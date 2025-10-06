@@ -30,9 +30,9 @@ namespace ShippingCallbacks.Models
 
     public record PayPalPurchaseUnitBreakdown
     {
-        public required Amount ItemTotal { get; set; }
-        public required Amount TaxTotal { get; set; }
-        public required Amount Shipping { get; set; }
+        public Amount? ItemTotal { get; set; }
+        public Amount? TaxTotal { get; set; }
+        public Amount? Shipping { get; set; }
     }
 
     public record PayPalRequest

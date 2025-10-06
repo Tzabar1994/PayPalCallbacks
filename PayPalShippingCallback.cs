@@ -76,9 +76,10 @@ public class PayPalShippingCallback
             return new SystemTextJsonResult(ppResponse, payPalJsonOptions);
             
         }
-        catch (JsonException)
+        catch (JsonException e)
         {
             _logger.LogError("Failed to de-serialize request from PayPal correctly!");
+            _logger.LogError(e.ToString());
             _logger.LogError($"Request Body: {rawRequestBody}");
             return new BadRequestObjectResult("Could not deserialize json correctly"); // 400
         }
