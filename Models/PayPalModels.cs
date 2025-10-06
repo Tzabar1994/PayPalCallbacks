@@ -25,6 +25,7 @@ namespace ShippingCallbacks.Models
     {
         public required string ReferenceId { get; set; }
         public required PayPalAmount Amount { get; set; }
+        public List<PayPalShippingOption>? ShippingOptions { get; set; }
 
     }
 
@@ -48,7 +49,6 @@ namespace ShippingCallbacks.Models
     {
         public required string Id { get; set; }
         public required List<PayPalPurchaseUnit> PurchaseUnits { get; set; }
-        public required List<PayPalShippingOption> ShippingOptions { get; set; }
     }
 
    

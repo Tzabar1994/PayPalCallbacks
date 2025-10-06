@@ -53,7 +53,6 @@ public class PayPalShippingCallback
             {
                 Id = blob.Id,
                 PurchaseUnits = blob.PurchaseUnits,
-                ShippingOptions = new List<PayPalShippingOption>()
             };
 
             var orderCurrency = blob.PurchaseUnits[0].Amount.CurrencyCode;
@@ -61,14 +60,15 @@ public class PayPalShippingCallback
 
             if (blob.ShippingOption is null)
             {
-                ppResponse.ShippingOptions = GenerateOptions(0, orderCurrency ?? "");
+                var shippingOptions = GenerateOptions(0, orderCurrency ?? "");
                 var breakdown = new PayPalPurchaseUnitBreakdown
                 {
                     ItemTotal = new Amount { Value = orderTotal, CurrencyCode = orderCurrency ?? "" },
                     TaxTotal = new Amount { Value = 0m, CurrencyCode = orderCurrency ?? "" },
                     Shipping = new Amount { Value = 0, CurrencyCode = orderCurrency ?? "" },
                 };
-                
+
+                ppResponse.PurchaseUnits[0].ShippingOptions = shippingOptions;
                 ppResponse.PurchaseUnits[0].Amount.Breakdown = breakdown;
 
             }
