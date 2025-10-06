@@ -65,13 +65,15 @@ public class PayPalShippingCallback
                 var breakdown = new PayPalPurchaseUnitBreakdown
                 {
                     ItemTotal = new Amount { Value = orderTotal, CurrencyCode = orderCurrency ?? "" },
-                    TaxTotal = new Amount { Value = 0, CurrencyCode = orderCurrency ?? "" },
+                    TaxTotal = new Amount { Value = 0m, CurrencyCode = orderCurrency ?? "" },
                     Shipping = new Amount { Value = 0, CurrencyCode = orderCurrency ?? "" },
                 };
                 
                 ppResponse.PurchaseUnits[0].Amount.Breakdown = breakdown;
 
             }
+
+            _logger.LogInformation($"Returning Result: {ppResponse}");
 
             return new SystemTextJsonResult(ppResponse, payPalJsonOptions);
             
