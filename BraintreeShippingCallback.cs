@@ -1,11 +1,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using BTCallback.Models;
-using BTCallback.Results;
+using ShippingCallbacks.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
+using ShippingCallbacks.Models;
 
 namespace tzabar.braintree;
 
@@ -75,11 +75,11 @@ public class BraintreeShippingCallback
                 {
                     _logger.LogInformation("Invalid Postal Code found, rejecting address");
 
-                    var errorCode = new PayPalError { Issue = PayPalErrorCode.ZIP_ERROR };
-                    var error = new PayPalErrorResponse
+                    var errorCode = new CallbackError { Issue = AddressErrorCode.ZIP_ERROR };
+                    var error = new CallbackErrorResponse
                     {
                         Name = "UNPROCESSABLE_ENTITY",
-                        Details = new List<PayPalError> { errorCode }
+                        Details = new List<CallbackError> { errorCode }
                     };
                     return new SystemTextJsonResult(error, braintreeJsonOptions, 422);
                 }

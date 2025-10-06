@@ -4,8 +4,8 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using BTCallback.Models;
-using BTCallback.Results;
+using ShippingCallbacks.Results;
+using ShippingCallbacks.Models;
 
 namespace BTCallback;
 
@@ -64,9 +64,9 @@ public class PayPalShippingCallback
                 ppResponse.ShippingOptions = GenerateOptions(0, orderCurrency ?? "");
                 var breakdown = new PayPalPurchaseUnitBreakdown
                 {
-                    ItemTotal = new Amount { Value = orderTotal, Currency_code = orderCurrency },
-                    TaxTotal = new Amount { Value = 0, Currency_code = orderCurrency },
-                    Shipping = new Amount { Value = 0, Currency_code = orderCurrency },
+                    ItemTotal = new Amount { Value = orderTotal, Currency_code = orderCurrency ?? "" },
+                    TaxTotal = new Amount { Value = 0, Currency_code = orderCurrency ?? "" },
+                    Shipping = new Amount { Value = 0, Currency_code = orderCurrency ?? "" },
                 };
                 
                 ppResponse.PurchaseUnits[0].Amount.Breakdown = breakdown;
