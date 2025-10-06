@@ -9,15 +9,15 @@ namespace ShippingCallbacks.Models
     public record Amount
     {
         public required decimal Value { get; set; }
-        public required string Currency_code { get; set; }
+        public required string CurrencyCode { get; set; }
     }
 
     public record ShippingAddress
     {
-        public string? Admin_area_2 { get; set; }
-        public string? Admin_area_1 { get; set; }
-        public required string Postal_code { get; set; }
-        public required string Country_code { get; set; }
+        public string? AdminArea_2 { get; set; }
+        public string? AdminArea_1 { get; set; }
+        public required string PostalCode { get; set; }
+        public required string CountryCode { get; set; }
     }
 
     public enum AddressErrorCode

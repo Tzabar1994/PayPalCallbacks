@@ -56,7 +56,7 @@ public class PayPalShippingCallback
                 ShippingOptions = new List<PayPalShippingOption>()
             };
 
-            var orderCurrency = blob.PurchaseUnits[0].Amount.Currency_code;
+            var orderCurrency = blob.PurchaseUnits[0].Amount.CurrencyCode;
             var orderTotal = blob.PurchaseUnits[0].Amount.Value;
 
             if (blob.ShippingOption is null)
@@ -64,9 +64,9 @@ public class PayPalShippingCallback
                 ppResponse.ShippingOptions = GenerateOptions(0, orderCurrency ?? "");
                 var breakdown = new PayPalPurchaseUnitBreakdown
                 {
-                    ItemTotal = new Amount { Value = orderTotal, Currency_code = orderCurrency ?? "" },
-                    TaxTotal = new Amount { Value = 0, Currency_code = orderCurrency ?? "" },
-                    Shipping = new Amount { Value = 0, Currency_code = orderCurrency ?? "" },
+                    ItemTotal = new Amount { Value = orderTotal, CurrencyCode = orderCurrency ?? "" },
+                    TaxTotal = new Amount { Value = 0, CurrencyCode = orderCurrency ?? "" },
+                    Shipping = new Amount { Value = 0, CurrencyCode = orderCurrency ?? "" },
                 };
                 
                 ppResponse.PurchaseUnits[0].Amount.Breakdown = breakdown;
@@ -87,9 +87,9 @@ public class PayPalShippingCallback
 
     public List<PayPalShippingOption> GenerateOptions(int selected = 0, string currency = "GBP")
     {
-        var free = new Amount { Value = 0, Currency_code = currency };
-        var medium = new Amount { Value = 5, Currency_code = currency };
-        var expensive = new Amount { Value = 10, Currency_code = currency };
+        var free = new Amount { Value = 0, CurrencyCode = currency };
+        var medium = new Amount { Value = 5, CurrencyCode = currency };
+        var expensive = new Amount { Value = 10, CurrencyCode = currency };
 
         var ship_options = new List<PayPalShippingOption> {
                     new PayPalShippingOption {

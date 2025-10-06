@@ -16,10 +16,8 @@ namespace ShippingCallbacks.Models
 
     }
 
-    public record PayPalAmount
+    public record PayPalAmount : Amount
     {
-        public required decimal Value { get; set; }
-        public required string Currency_code { get; set; }
         public PayPalPurchaseUnitBreakdown? Breakdown { get; set; }
     }
 

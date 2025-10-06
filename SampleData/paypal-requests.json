@@ -1,0 +1,29 @@
+﻿[
+  {
+    "id": "5O190127TN364715T",
+    "shipping_address": {
+      "country_code": "US",
+      "admin_area_1": "TX",
+      "admin_area_2": "Dallas",
+      "postal_code": "75001"
+    },
+    "shipping_option": {
+      "id": "2",
+      "amount": {
+        "currency_code": "USD",
+        "value": "20.00"
+      },
+      "type": "SHIPPING",
+      "label": "Free Shipping"
+    },
+    "purchase_units": [
+      {
+        "reference_id": "d9f80740-38f0-11e8-b467-0ed5f89f718b",
+        "amount": {
+          "currency_code": "USD",
+          "value": "100.00"
+        }
+      }
+    ]
+  }
+]
