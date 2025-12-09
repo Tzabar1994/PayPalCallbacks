@@ -32,7 +32,8 @@ public class BraintreeShippingCallback
             Converters =
             {
                 new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseUpper)
-            }
+            },
+            WriteIndented = true
         };
 
         req.EnableBuffering();
