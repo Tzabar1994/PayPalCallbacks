@@ -63,17 +63,22 @@ public class BraintreeShippingCallback
                 ShippingOptions = []
             };
 
+            if (blob.LineItems != null)
+            {
+                BTResponse.LineItems = blob.LineItems;
+            }
+
             //Deal with weirdness in the BT request? I think this is if you haven't defined the 
             // item total in the createPayPalPayment() request, it comes as zero. 
             // Causes problems later on!
             if (blob.ItemTotal == 0)
-            {
-                BTResponse.ItemTotal = blob.Amount.Value - blob.Shipping;
-            }
-            else
-            {
-                BTResponse.ItemTotal = blob.ItemTotal;
-            }
+                {
+                    BTResponse.ItemTotal = blob.Amount.Value - blob.Shipping;
+                }
+                else
+                {
+                    BTResponse.ItemTotal = blob.ItemTotal;
+                }
 
             if (blob.ShippingOption == null)
             {

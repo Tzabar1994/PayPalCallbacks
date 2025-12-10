@@ -39,5 +39,19 @@ namespace ShippingCallbacks.Models
         public decimal Insurance { get; set; }
         public decimal ShippingDiscount { get; set; }
         public decimal Discount { get; set; }
+        public List<BraintreeLineItem>? LineItems { get; set; }
+    }
+
+    public record BraintreeLineItem
+    {
+        public required string Name { get; set; }
+        public required int Quantity { get; set; }
+        public required Amount UnitAmount { get; set; }
+        public string? Type { get; set; }
+        public string? Description { get; set; }
+        public string? ProductCode { get; set; }
+        public Amount? UnitTaxAmount { get; set; }
+        public string? Url { get; set; }
+        public string? ImageUrl { get; set; }
     }
 }
