@@ -18,7 +18,7 @@ public class BraintreeShippingCallback
         _logger = logger;
     }
 
-    [Function("ShippingCallback")]
+    [Function("BraintreeShippingCallback")]
     public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequest req)
     {
         _logger.LogInformation("Braintree Shipping Callback triggered");
