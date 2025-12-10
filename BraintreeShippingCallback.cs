@@ -47,7 +47,7 @@ public class BraintreeShippingCallback
             var blob = JsonSerializer.Deserialize<BraintreeRequest>(rawRequestBody, braintreeJsonOptions)
                 ?? throw new JsonException("Could not deserialise input correctly!");
 
-            _logger.LogInformation($"Json De-serialized: {blob}");
+            _logger.LogInformation($"Input json De-serialized: {blob}");
 
             var BTResponse = new BraintreeResponse
             {
@@ -62,6 +62,18 @@ public class BraintreeShippingCallback
                 Discount = 0,
                 ShippingOptions = []
             };
+
+            //Deal with weirdness in the BT request? I think this is if you haven't defined the 
+            // item total in the createPayPalPayment() request, it comes as zero. 
+            // Causes problems later on!
+            if (blob.ItemTotal == 0)
+            {
+                BTResponse.ItemTotal = blob.Amount.Value - blob.Shipping;
+            }
+            else
+            {
+                BTResponse.ItemTotal = blob.ItemTotal;
+            }
 
             if (blob.ShippingOption == null)
             {
@@ -83,35 +95,24 @@ public class BraintreeShippingCallback
                     };
                     return new SystemTextJsonResult(error, braintreeJsonOptions, 422);
                 }
-
-                //Deal with weirdness in the BT request?
-                if (blob.ItemTotal == 0)
-                {
-                    BTResponse.ItemTotal = blob.Amount.Value;
-                }
-                else
-                {
-                    BTResponse.Amount.Value = blob.ItemTotal;
-                }
-
                 BTResponse.ShippingOptions = generateOptions();
             }
             else
             {
                 //We're responding to a newly selected shipping option?
-                _logger.LogInformation("Updating Total price for selected shipping option!");
-                var shipping = blob.ShippingOption.Amount.Value;
+                _logger.LogInformation("Updating Total price for selected shipping option");
+                var shippingCost = blob.ShippingOption.Amount.Value;
+                //_logger.LogInformation($"Chosen shipping option has amount {shippingCost}");
                 var selectedOption = Int32.Parse(blob.ShippingOption.Id) - 1;
 
                 var amount = new Amount
                 {
                     CurrencyCode = blob.Amount.CurrencyCode,
-                    Value = blob.ItemTotal + shipping
+                    Value = BTResponse.ItemTotal + shippingCost
                 };
 
                 BTResponse.Amount = amount;
-                BTResponse.ItemTotal = blob.ItemTotal;
-                BTResponse.Shipping = shipping;
+                BTResponse.Shipping = shippingCost;
                 BTResponse.ShippingOptions = generateOptions(selectedOption);
             }
 
