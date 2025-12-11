@@ -32,7 +32,8 @@ public class BraintreeShippingCallback
             Converters =
             {
                 new JsonStringEnumConverter(JsonNamingPolicy.SnakeCaseUpper)
-            }
+            },
+            WriteIndented = true
         };
 
         req.EnableBuffering();
@@ -47,7 +48,7 @@ public class BraintreeShippingCallback
             var blob = JsonSerializer.Deserialize<BraintreeRequest>(rawRequestBody, braintreeJsonOptions)
                 ?? throw new JsonException("Could not deserialise input correctly!");
 
-            _logger.LogInformation($"Input json De-serialized: {blob}");
+            _logger.LogInformation($"Input json De-serialized: {JsonSerializer.Serialize<BraintreeRequest>(blob, braintreeJsonOptions)}");
 
             var BTResponse = new BraintreeResponse
             {
@@ -67,39 +68,43 @@ public class BraintreeShippingCallback
             {
                 BTResponse.LineItems = blob.LineItems;
             }
+            
+            _logger.LogInformation($"Check if Postal Code is valid (must not contain 'X'): {blob.ShippingAddress.PostalCode}");
+
+            if (blob.ShippingAddress.PostalCode.ToUpper().Contains("X"))
+            {
+                _logger.LogInformation("Invalid Postal Code found, rejecting address");
+
+                var errorCode = new CallbackError { Issue = AddressErrorCode.ZIP_ERROR };
+                var error = new CallbackErrorResponse
+                {
+                    Name = "UNPROCESSABLE_ENTITY",
+                    Details = new List<CallbackError> { errorCode }
+                };
+                return new SystemTextJsonResult(error, braintreeJsonOptions, 422);
+            }
+            else
+            {
+                _logger.LogInformation("Postal Code Accepted!");
+            }
 
             //Deal with weirdness in the BT request? I think this is if you haven't defined the 
             // item total in the createPayPalPayment() request, it comes as zero. 
             // Causes problems later on!
             if (blob.ItemTotal == 0)
-                {
-                    BTResponse.ItemTotal = blob.Amount.Value - blob.Shipping;
-                }
-                else
-                {
-                    BTResponse.ItemTotal = blob.ItemTotal;
-                }
+            {
+                BTResponse.ItemTotal = blob.Amount.Value - blob.Shipping;
+            }
+            else
+            {
+                BTResponse.ItemTotal = blob.ItemTotal;
+            }
 
             if (blob.ShippingOption == null)
             {
                 //If no selected shipping option, then this is a new address?
                 //  Update the response with the generic shipping options
                 _logger.LogInformation("No shipping options found, generating defaults");
-
-                _logger.LogInformation($"Check if Postal Code is valid (must not contain 'X'): {blob.ShippingAddress.PostalCode}");
-
-                if (blob.ShippingAddress.PostalCode.ToUpper().Contains("X"))
-                {
-                    _logger.LogInformation("Invalid Postal Code found, rejecting address");
-
-                    var errorCode = new CallbackError { Issue = AddressErrorCode.ZIP_ERROR };
-                    var error = new CallbackErrorResponse
-                    {
-                        Name = "UNPROCESSABLE_ENTITY",
-                        Details = new List<CallbackError> { errorCode }
-                    };
-                    return new SystemTextJsonResult(error, braintreeJsonOptions, 422);
-                }
                 BTResponse.ShippingOptions = generateOptions();
             }
             else
@@ -121,7 +126,7 @@ public class BraintreeShippingCallback
                 BTResponse.ShippingOptions = generateOptions(selectedOption);
             }
 
-            _logger.LogInformation($"Returning Result: {BTResponse}");
+            _logger.LogInformation($"Returning Result: {JsonSerializer.Serialize<BraintreeResponse>(BTResponse,braintreeJsonOptions)}");
             return new SystemTextJsonResult(BTResponse, braintreeJsonOptions);
 
         }
