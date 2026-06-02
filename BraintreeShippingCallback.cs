@@ -118,7 +118,7 @@ public class BraintreeShippingCallback
                 var amount = new Amount
                 {
                     CurrencyCode = blob.Amount.CurrencyCode,
-                    Value = BTResponse.ItemTotal + shippingCost
+                    Value = BTResponse.ItemTotal + shippingCost - blob.Discount
                 };
 
                 BTResponse.Amount = amount;
