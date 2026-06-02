@@ -92,5 +92,25 @@
             "postal_code": "TW9 1EH",
             "country_code": "GB"
         }
+    },
+    {
+        "shipping_address": {
+            "admin_area_2": "Richmond",
+            "admin_area_1": "Surrey",
+            "postal_code": "TW9 1EH",
+            "country_code": "GB"
+        },
+        "id": "5SX84646GV6673155",
+        "amount": {
+            "value": "11.99",
+            "currency_code": "GBP"
+        },
+        "item_total": "12.99",
+        "shipping": "0",
+        "handling": "0",
+        "tax_total": "0",
+        "insurance": "0",
+        "shipping_discount": "0",
+        "discount": "1.00"
     }
 ]
