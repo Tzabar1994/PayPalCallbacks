@@ -54,13 +54,13 @@ public class BraintreeShippingCallback
             {
                 Id = blob.Id,
                 Amount = blob.Amount,
-                ItemTotal = 0,
-                Shipping = 0,
-                Handling = 0,
-                TaxTotal = 0,
-                Insurance = 0,
-                ShippingDiscount = 0,
-                Discount = 0,
+                ItemTotal = blob.ItemTotal,
+                Shipping = blob.Shipping,
+                Handling = blob.Handling,
+                TaxTotal = blob.TaxTotal,
+                Insurance = blob.Insurance,
+                ShippingDiscount = blob.ShippingDiscount,
+                Discount = blob.Discount,
                 ShippingOptions = []
             };
 
